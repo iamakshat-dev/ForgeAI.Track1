@@ -1,9 +1,19 @@
-# Raw data may contain large or licensed datasets.
+# Raw datasets -- both now tracked via Git LFS instead of excluded (see
+# .gitattributes and README's Dataset setup for the licensing note on
+# creditcard.csv specifically -- committing it was a deliberate, informed
+# decision, not a default). Still excluding anything else that might land
+# in data/raw/ (a stray export, a different format) that isn't one of
+# these two known, intentionally-tracked files.
 data/raw/*.csv
+!data/raw/creditcard.csv
+!data/raw/online_retail_ii.csv
 
 # Derived features -- 160MB+, fully regenerable via
-# src/features/build_features.py from data/raw/creditcard.csv. Never
-# commit this; it would blow past GitHub's 100MB file limit anyway.
+# src/features/build_features.py / build_return_features.py from the raw
+# datasets above (docker-entrypoint.sh does this automatically on
+# container start if missing). Deliberately NOT committed even now that
+# the raw data is: no reason to double the LFS footprint for data that
+# regenerates in seconds from what's already tracked.
 data/processed/*.csv
 
 # Python artifacts

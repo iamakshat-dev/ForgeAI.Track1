@@ -4,3 +4,5 @@
 # other tracked file), so a future commit from a default Windows git
 # config could silently reintroduce that break without this.
 *.sh text eol=lf
+data/raw/online_retail_ii.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/creditcard.csv filter=lfs diff=lfs merge=lfs -text
