@@ -141,7 +141,29 @@ Two things worth understanding, not just copying:
 
 ## Dataset setup
 
-The dataset (Kaggle's [`mlg-ulb/creditcardfraud`](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud),
+Neither raw dataset is — or can be — committed to this repo (see each
+one's own note below for why), so a fresh clone's `data/raw/` is empty
+apart from a `.gitkeep`. **Fastest path**, handles both datasets, skips
+whichever one you already have:
+
+```bash
+python scripts/setup_datasets.py
+```
+
+What it actually does, honestly, per dataset:
+- **UCI Online Retail II** (CC BY 4.0, no account needed): downloads and
+  converts it fully automatically — nothing to configure.
+- **Kaggle's creditcard.csv** (requires *your own* free Kaggle account):
+  automates the download via Kaggle's own official API, using *your*
+  credentials — it cannot and does not bypass the account requirement.
+  If you don't have a Kaggle API token configured yet
+  (`~/.kaggle/kaggle.json`), the script says so plainly and prints the
+  manual steps below instead of failing silently.
+
+The manual steps it's automating, if you'd rather do them by hand or the
+script can't reach the Kaggle API from your machine:
+
+The fraud dataset (Kaggle's [`mlg-ulb/creditcardfraud`](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud),
 284,807 transactions, 492 fraud, ~0.172% positive class) is not — and
 cannot be — committed to this repo: it requires a free Kaggle account to
 download, and at 150MB+ it has no business living in git history anyway.
@@ -172,7 +194,9 @@ The return-risk scorer trains on a **second, separate** dataset —
 [UCI's Online Retail II](https://archive.ics.uci.edu/dataset/502/online+retail+ii)
 (1,067,371 real transaction-line rows from a UK-based online gift-ware
 retailer, Dec 2009–Dec 2011, CC BY 4.0). Unlike the fraud dataset, **no
-account or login is required** — it downloads directly:
+account or login is required** — `python scripts/setup_datasets.py`
+(above) handles this one fully automatically. The manual equivalent, if
+you'd rather do it by hand — it downloads directly:
 
 ```bash
 curl -L -o online_retail_ii.zip "https://archive.ics.uci.edu/static/public/502/online+retail+ii.zip"
