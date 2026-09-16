@@ -37,10 +37,20 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Baked in at build time (Vite env vars are compile-time). Must
-        # be reachable from your BROWSER -- localhost + backend's
-        # published port -- never the Docker-internal hostname `backend`.
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+        # Baked in at build time (Vite env vars are compile-time).
+        # Relative, not an absolute host:port -- nginx (frontend/nginx.conf)
+        # reverse-proxies /api/* to the backend container over the compose
+        # network's own DNS, so the browser only ever talks to whatever
+        # origin actually served the page. This is what makes the SAME
+        # built image work unmodified whether it's reached via
+        # localhost:3000, a different LAN IP, or a tunnel/port-forward
+        # service (found live: a VS Code dev tunnel forwarding only the
+        # frontend's port broke the old absolute
+        # http://localhost:8000/api/v1 default outright -- "localhost"
+        # from a tunnel visitor's browser means THEIR machine, not this
+        # one). Override this only if you have a real reason to bypass
+        # the proxy and call the backend directly.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
     ports:
       # Container-side 8080, not 80 -- frontend/Dockerfile now runs nginx
       # unprivileged (non-root), which listens on 8080 by design (see
