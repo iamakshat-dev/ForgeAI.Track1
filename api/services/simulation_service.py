@@ -28,6 +28,15 @@ class SimulationService:
     def __init__(self) -> None:
         self.y_true: np.ndarray | None = None
         self.y_prob: np.ndarray | None = None
+        self.amount: np.ndarray | None = None
+        # The validation slice's own pandas index -- stable and unique
+        # because `data` is reset_index(drop=True)'d to 0..N-1 in sorted-
+        # by-Time order BEFORE slicing, and .iloc slicing preserves index
+        # labels rather than renumbering them. Used as the drill-down's
+        # transaction_id: a deterministic pointer into this frozen
+        # snapshot, not a real database primary key -- see
+        # api/routes/simulate.py's /simulate/transactions.
+        self.transaction_ids: np.ndarray | None = None
         self._loaded = False
 
     def load(self) -> None:
@@ -36,6 +45,9 @@ class SimulationService:
         feature_columns = bundle["feature_columns"]
         split = bundle["split_indices"]
 
+        # "Amount" is already one of feature_columns (see the model bundle),
+        # so it isn't added again here -- doing so would duplicate it in
+        # usecols.
         data = (
             pd.read_csv(FEATURES_PATH, usecols=[*feature_columns, "Class"])
             .sort_values("Time", kind="stable")
@@ -45,6 +57,8 @@ class SimulationService:
 
         self.y_true = validation["Class"].to_numpy()
         self.y_prob = model.predict_proba(validation[feature_columns])[:, 1]
+        self.amount = validation["Amount"].to_numpy()
+        self.transaction_ids = validation.index.to_numpy()
         self._loaded = True
 
     @property

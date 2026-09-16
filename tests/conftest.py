@@ -20,12 +20,15 @@ import pytest
 
 from api.routes.analytics import analytics_cache
 from api.routes.predict import predict_rate_limiter
+from api.routes.simulate import simulate_transactions_rate_limiter
 
 
 @pytest.fixture(autouse=True)
 def _reset_stateful_singletons():
     predict_rate_limiter.reset()
     analytics_cache.invalidate()
+    simulate_transactions_rate_limiter.reset()
     yield
     predict_rate_limiter.reset()
     analytics_cache.invalidate()
+    simulate_transactions_rate_limiter.reset()

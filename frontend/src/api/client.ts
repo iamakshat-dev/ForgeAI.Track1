@@ -11,6 +11,8 @@ import type {
   ReturnModelInfoOut,
   SimulateRequest,
   SimulateResponse,
+  SimulateTransactionsRequest,
+  SimulateTransactionsResponse,
   TransactionIn,
 } from '../types/api';
 
@@ -108,6 +110,17 @@ export function getAlerts(): Promise<AlertsStatusOut> {
 
 export function simulate(body: SimulateRequest): Promise<SimulateResponse> {
   return request<SimulateResponse>('/simulate', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+/** Threshold Simulator's drill-down: only called when a user explicitly
+ * expands the "Transactions affected" card, never on a slider drag -- see
+ * ThresholdSimulator.tsx.
+ */
+export function simulateTransactions(body: SimulateTransactionsRequest): Promise<SimulateTransactionsResponse> {
+  return request<SimulateTransactionsResponse>('/simulate/transactions', {
     method: 'POST',
     body: JSON.stringify(body),
   });
