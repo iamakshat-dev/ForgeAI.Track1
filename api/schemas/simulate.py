@@ -1,6 +1,9 @@
-"""Request/response schemas for POST /api/v1/simulate."""
+"""Request/response schemas for POST /api/v1/simulate and its drill-down
+companion, POST /api/v1/simulate/transactions."""
 
 from __future__ import annotations
+
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -44,3 +47,44 @@ class SimulateResponse(BaseModel):
     fn: int
     tn: int
     validation_set_size: int
+
+
+class SimulateTransactionsRequest(SimulateRequest):
+    # Explicit-click drill-down, not fired on every slider drag -- see
+    # ThresholdSimulator.tsx. Capped at 200: this is a UI table meant for a
+    # human to scan, not a bulk export, and the response body would
+    # otherwise scale with however many rows a very low threshold flags
+    # (up to the full ~57k-row validation set at threshold 0.0).
+    limit: int = Field(default=50, ge=1, le=200)
+
+
+class SimulateTransactionItem(BaseModel):
+    # A deterministic pointer into the frozen validation-set snapshot
+    # (see SimulationService.transaction_ids), NOT a real database primary
+    # key -- this endpoint never touches api/services/db_models.py.
+    transaction_id: str
+    amount: float
+    fraud_probability: float
+    true_label: Literal["fraud", "legitimate"]
+    # This simulator exposes a single binary threshold (unlike the real
+    # three-tier ALLOW/REVIEW/HOLD decision engine used elsewhere in this
+    # app -- see src/risk/decision_engine.py -- which needs a second,
+    # medium threshold this page doesn't take as input). Every row
+    # returned here is, by construction, on the flagged side of that one
+    # threshold, so this is always "REVIEW/HOLD" -- matching the same
+    # label the "Transactions affected" stat card already uses for this
+    # bucket, not a new distinction.
+    decision: Literal["REVIEW/HOLD"] = "REVIEW/HOLD"
+
+
+class SimulateTransactionsResponse(BaseModel):
+    threshold: float
+    # Total transactions on the flagged side of the threshold (equal to
+    # SimulateResponse.transactions_affected_count for the same threshold)
+    # -- kept separate from `transactions` below, which is capped by
+    # `limit`, so the UI can show "showing 50 of 3,214" instead of
+    # implying the capped list is the whole picture.
+    total_affected: int
+    returned_count: int
+    limit: int
+    transactions: list[SimulateTransactionItem]

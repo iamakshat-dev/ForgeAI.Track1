@@ -216,6 +216,43 @@ export interface SimulateResponse {
   validation_set_size: number;
 }
 
+/** Body for POST /api/v1/simulate/transactions. Mirrors
+ * api/schemas/simulate.py:SimulateTransactionsRequest.
+ */
+export interface SimulateTransactionsRequest {
+  threshold: number;
+  false_positive_cost?: number;
+  false_negative_cost?: number;
+  limit?: number;
+}
+
+/** One row in SimulateTransactionsResponse. Mirrors
+ * api/schemas/simulate.py:SimulateTransactionItem. `transaction_id` is a
+ * pointer into the frozen validation-set snapshot, NOT a real stored
+ * transaction/prediction id -- never link this to TransactionDetail.tsx's
+ * route, which reads real data.
+ */
+export interface SimulateTransactionItem {
+  transaction_id: string;
+  amount: number;
+  fraud_probability: number;
+  true_label: 'fraud' | 'legitimate';
+  decision: 'REVIEW/HOLD';
+}
+
+/** Response from POST /api/v1/simulate/transactions. Mirrors
+ * api/schemas/simulate.py:SimulateTransactionsResponse -- the Threshold
+ * Simulator's drill-down list, same VALIDATION-set snapshot /simulate
+ * uses, not live traffic. See ThresholdSimulator.tsx.
+ */
+export interface SimulateTransactionsResponse {
+  threshold: number;
+  total_affected: number;
+  returned_count: number;
+  limit: number;
+  transactions: SimulateTransactionItem[];
+}
+
 /** One item in GET /api/v1/chargebacks. Mirrors
  * api/schemas/evidence.py:ChargebackListItemOut. Chargeback/refund data is
  * SEEDED/SIMULATED (src/evidence/seed_chargebacks.py) -- see

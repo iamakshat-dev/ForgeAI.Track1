@@ -5,6 +5,7 @@ import { ErrorBlock, LoadingBlock } from '../components/AsyncState';
 import { PrecisionRecallCurveChart } from '../components/PrecisionRecallCurveChart';
 import type { CurvePoint } from '../components/PrecisionRecallCurveChart';
 import { StatCard } from '../components/StatCard';
+import { TransactionDrilldown } from '../components/TransactionDrilldown';
 import { Skeleton } from '../components/ui/skeleton';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { formatAmount } from '../utils/format';
@@ -29,6 +30,7 @@ function formatPercent(value: number): string {
 export function ThresholdSimulator() {
   const [threshold, setThreshold] = useState(0.5);
   const [retryNonce, setRetryNonce] = useState(0);
+  const [drilldownOpen, setDrilldownOpen] = useState(false);
   const debouncedThreshold = useDebouncedValue(threshold, DEBOUNCE_MS);
 
   const live = useLiveApiData(() => simulate({ threshold: debouncedThreshold }), [debouncedThreshold, retryNonce]);
@@ -119,7 +121,9 @@ export function ThresholdSimulator() {
         <StatCard
           label="Transactions affected"
           value={data.transactions_affected_count.toLocaleString()}
-          caption={`${data.transactions_affected_percent.toFixed(2)}% of validation set (REVIEW/HOLD)`}
+          caption={`${data.transactions_affected_percent.toFixed(2)}% of validation set (REVIEW/HOLD) -- click to view`}
+          onClick={() => setDrilldownOpen((open) => !open)}
+          expanded={drilldownOpen}
         />
         <StatCard
           label="Expected financial loss"
@@ -127,6 +131,24 @@ export function ThresholdSimulator() {
           caption={`fp_cost=${data.false_positive_cost}, fn_cost=${data.false_negative_cost} (placeholder units)`}
         />
       </div>
+
+      {drilldownOpen && (
+        <div className="card p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-base font-semibold text-text-primary">Affected transactions</h2>
+            <button
+              onClick={() => setDrilldownOpen(false)}
+              className="text-xs font-medium text-text-muted hover:text-text-primary"
+            >
+              Collapse
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-text-muted">
+            The same validation-set rows behind the count above, at the current threshold ({debouncedThreshold.toFixed(2)}).
+          </p>
+          <TransactionDrilldown threshold={debouncedThreshold} />
+        </div>
+      )}
 
       <div className="card p-6">
         <h2 className="font-display text-base font-semibold text-text-primary">Precision / recall vs. threshold</h2>
