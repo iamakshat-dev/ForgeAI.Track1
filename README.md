@@ -24,7 +24,7 @@ document.
 3. [Environment variables](#environment-variables)
 4. [Dataset setup](#dataset-setup)
 5. [Model training](#model-training-optional--reproducing-from-scratch)
-6. [Running the app](#running-the-app)
+6. [Running the app](#running-the-app) ([deploying separately](#deploying-frontend-and-backend-separately))
 7. [Demo walkthrough](#demo-walkthrough)
 8. [API endpoint reference](#api-endpoint-reference)
 9. [Model performance (real, audited test-set numbers)](#model-performance-real-audited-test-set-numbers)
@@ -122,7 +122,7 @@ cp .env.example .env
 | `BACKEND_PORT` | `8000` | Host port the API is published on |
 | `FRONTEND_PORT` | `3000` | Host port the web app is published on |
 | `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000` | Comma-separated origins the backend accepts cross-origin requests from. **Local-dev defaults only** — a real deployment must set this to the exact production frontend origin(s), never a wildcard and never left at these localhost defaults (see Production considerations) |
-| `VITE_API_BASE_URL` | `http://localhost:8000/api/v1` | Baked into the frontend build; where the browser sends API calls |
+| `VITE_API_BASE_URL` | `/api/v1` | Baked into the frontend build; where the browser sends API calls. Relative by default because nginx proxies `/api/*` to the backend container internally (see `frontend/nginx.conf`), so the browser only ever calls whatever origin served the page. Only becomes an absolute URL if you deploy the frontend and backend separately — see [Deploying frontend and backend separately](#deploying-frontend-and-backend-separately) |
 | `PREDICT_RATE_LIMIT_PER_MINUTE` | `200` | Per-IP sliding-window limit on `POST /predict` |
 | `SIMULATE_RATE_LIMIT_PER_MINUTE` | `500` | Per-IP limit on `POST /simulate` (higher than `/predict`'s — sized against the Threshold Simulator page's own legitimate ~51-450 calls/minute, see `api/routes/simulate.py`) |
 | `RETURN_PREDICT_RATE_LIMIT_PER_MINUTE` | `120` | Per-IP limit on `POST /predict/return` |
@@ -296,6 +296,54 @@ npm run dev
 
 - API: `http://localhost:8000`
 - Web app: `http://localhost:5173` (Vite's default dev port)
+
+### Deploying frontend and backend separately
+
+The Docker setup above keeps the frontend and backend on one origin (nginx
+proxies `/api/*` internally), which is why `VITE_API_BASE_URL` defaults to
+a relative `/api/v1` and `CORS_ORIGINS` never has to matter locally. That
+convenience doesn't survive splitting the two across separate hosts —
+e.g. the frontend on Vercel/Netlify and the backend on a container host
+(Railway, Render, Fly.io, a plain VPS running `docker compose`). This repo
+isn't built for the frontend half to run as Vercel *serverless functions*
+— it's a stateful, long-running FastAPI process (the model loaded once at
+startup, `data/predictions.db`, the drift baseline, the rate limiter's
+in-memory state) that needs a real persistent volume, none of which fits
+a stateless, ephemeral function. The static frontend build, though, is a
+genuinely good fit for Vercel on its own.
+
+If you split them:
+
+1. **Backend** — deploy `Dockerfile` (repo root) to a container host with
+   a persistent volume mounted at `/app/data` and `/app/models` (the
+   second holds `models/ACTIVE_VERSION`, which mechanism a promotion via
+   `POST /api/v1/models/promote` uses to survive a restart — see
+   `docs/retraining_pipeline.md`). Set `CORS_ORIGINS` there to your
+   frontend's real deployed origin (e.g.
+   `CORS_ORIGINS=https://your-app.vercel.app`) — never left at the
+   localhost defaults above.
+2. **Frontend** — deploy `frontend/` to Vercel (root directory =
+   `frontend`, framework preset Vite). Set `VITE_API_BASE_URL` at
+   **build** time to the backend's full public URL, e.g.
+   `VITE_API_BASE_URL=https://your-backend.example.com/api/v1` — a
+   relative path only means anything when nginx is there to proxy it.
+   `frontend/vercel.json` handles the one thing Vercel doesn't infer
+   automatically for a Vite SPA: rewriting every path to `index.html` so
+   a hard refresh on e.g. `/threshold-simulator` doesn't 404 (nginx's
+   `try_files` does the same job in the Docker path — see
+   `frontend/nginx.conf`).
+
+**Why `vercel.json` doesn't set a Content-Security-Policy**, unlike
+`frontend/nginx.conf`: nginx's CSP scopes `connect-src` to `'self'`
+because the API is same-origin there. On Vercel the backend is a
+*different* origin, entirely dependent on where you deployed it — a
+static `connect-src 'self'` in this repo would silently block every API
+call again, the exact bug class `frontend/nginx.conf`'s own comments
+already document happening twice. Rather than guess at a value that's
+only correct for one specific deployment, this repo leaves CSP unset for
+the split-deployment path; if you want one, add a `headers` entry to
+`frontend/vercel.json` with `connect-src 'self' https://your-backend.example.com`
+matching your actual backend URL.
 
 ## Demo walkthrough
 
