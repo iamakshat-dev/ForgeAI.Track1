@@ -34,20 +34,20 @@ export function CleanGauge({ score = 832 }: CleanGaugeProps) {
 
         {/* Warning Tick (~65%) */}
         <line
-          x1={cx + r * Math.cos((-55 * Math.PI) / 180)}
-          y1={cy + r * Math.sin((-55 * Math.PI) / 180)}
-          x2={cx + (r - 7) * Math.cos((-55 * Math.PI) / 180)}
-          y2={cy + (r - 7) * Math.sin((-55 * Math.PI) / 180)}
+          x1="98.68"
+          y1="27.04"
+          x2="94.66"
+          y2="32.78"
           stroke="#F59E0B"
           strokeWidth="1.5"
         />
 
         {/* Critical Tick (~85%) */}
         <line
-          x1={cx + r * Math.cos((-25 * Math.PI) / 180)}
-          y1={cy + r * Math.sin((-25 * Math.PI) / 180)}
-          x2={cx + (r - 7) * Math.cos((-25 * Math.PI) / 180)}
-          y2={cy + (r - 7) * Math.sin((-25 * Math.PI) / 180)}
+          x1="115.32"
+          y1="46.87"
+          x2="108.97"
+          y2="49.83"
           stroke="#EF4444"
           strokeWidth="1.5"
         />
