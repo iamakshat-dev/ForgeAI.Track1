@@ -34,3 +34,8 @@ data/predictions.db
 # it's excluded on principle rather than only once something sensitive is
 # actually in it.
 .env
+
+# Application logs generated at runtime
+logs/*.log
+!logs/.gitkeep
+

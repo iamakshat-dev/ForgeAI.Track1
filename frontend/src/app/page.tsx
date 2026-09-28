@@ -36,6 +36,7 @@ export default function Home() {
     currentErrorRate,
     currentZScore,
     activeAnomaliesCount,
+    streamTick,
   } = useTelemetryStream();
 
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'HISTORY' | 'SINKS' | 'CONFIG'>('DASHBOARD');
@@ -48,8 +49,11 @@ export default function Home() {
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  // Clean 3-digit score matching the reference image (e.g. 832)
-  const stabilityIndex = Math.max(720, Math.min(990, Math.round(990 - currentErrorRate * 3500)));
+  // Dynamic 3-digit score that lives & breathes with incoming stream ticks
+  const stabilityIndex = Math.max(
+    720,
+    Math.min(992, Math.round(988 - currentErrorRate * 3400 + Math.sin(streamTick * 0.8) * 3))
+  );
 
   const handleSaveConfig = (newConfig: DetectorConfig) => {
     console.log('Saved detector configuration:', newConfig);
@@ -467,14 +471,17 @@ export default function Home() {
                         <div className="absolute left-12 right-0 bottom-3 border-b border-white/[0.05] border-dashed pointer-events-none" />
 
                         {/* Stems */}
-                        <div className="ml-12 flex-1 h-[135px] flex items-end justify-between gap-2.5 pb-2">
-                          {telemetryHistory.slice(-14).map((pt, idx) => {
+                        <div className="ml-12 flex-1 h-[135px] flex items-end justify-between gap-2 pb-2">
+                          {telemetryHistory.slice(-16).map((pt, idx) => {
                             const isSpike = pt.isSpike || pt.errorRate > 0.03;
-                            const stemHeightPx = Math.max(28, Math.min(115, Math.round(26 + (pt.errorRate / 0.05) * 85)));
+                            const basePct = Math.min(1, pt.errorRate / 0.05);
+                            const stemHeightPx = isSpike
+                              ? Math.min(125, Math.round(85 + basePct * 40))
+                              : Math.max(22, Math.min(65, Math.round(20 + (pt.errorRate / 0.006) * 42)));
 
                             return (
                               <div
-                                key={idx}
+                                key={pt.timestamp || idx}
                                 className="relative flex-1 flex flex-col items-center justify-end group cursor-pointer"
                                 onClick={() => {
                                   if (alerts.length > 0) setActiveIncident(alerts[0]);
@@ -489,7 +496,7 @@ export default function Home() {
                                 />
                                 <div
                                   style={{ height: `${stemHeightPx}px` }}
-                                  className={`w-[2px] transition-all rounded-full ${
+                                  className={`w-[2px] transition-all duration-300 ease-out rounded-full ${
                                     isSpike ? 'bg-violet-500' : 'bg-neutral-700 group-hover:bg-neutral-500'
                                   }`}
                                 />

@@ -4,7 +4,7 @@ export const INITIAL_BASELINE_MEAN = 0.0035; // 0.35% normal error rate
 export const INITIAL_BASELINE_STD_DEV = 0.0008; // 0.08% standard deviation
 export const SLIDING_WINDOW_SEC = 60;
 
-const SERVICES = [
+export const SERVICES = [
   'api-gateway.edge',
   'auth-service.us-east-1',
   'order-pipeline.worker',
@@ -13,7 +13,7 @@ const SERVICES = [
   'postgres.connection-pool',
 ];
 
-const NORMAL_MESSAGES = [
+export const NORMAL_MESSAGES = [
   { level: 'INFO', msg: 'Handled HTTP POST /api/v1/checkout/session 200 OK - 42ms' },
   { level: 'INFO', msg: 'JWT token validated for merchant_id=m_918231, role=ADMIN' },
   { level: 'INFO', msg: 'Batch replicated 124 records to replica cluster node-03' },
@@ -24,7 +24,7 @@ const NORMAL_MESSAGES = [
   { level: 'INFO', msg: 'Webhook dispatched to endpoint https://merchant.webhook.io/v2' },
 ];
 
-const ANOMALY_MESSAGES = [
+export const ANOMALY_MESSAGES = [
   { level: 'ERROR', code: 502, msg: 'Upstream host timed out after 5000ms: auth-service.us-east-1 disconnected' },
   { level: 'FATAL', code: 500, msg: 'PostgresPoolExhaustedException: timeout waiting for idle database connection (max=50)' },
   { level: 'ERROR', code: 504, msg: 'Gateway timeout: downstream order-pipeline buffer queue capacity at 99.8%' },
