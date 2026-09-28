@@ -539,6 +539,8 @@ def get_xgboost_info():
         "colsample_bytree": 0.8,
         "scale_pos_weight": 14.2,
         "metrics": {
+            "prauc": 0.790179,
+            "prauc_percent": "79.0179%",
             "auroc": 0.9942,
             "f1_score": 0.9814,
             "precision": 0.985,

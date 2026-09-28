@@ -268,9 +268,22 @@ export function XGBoostView() {
       </div>
 
       {/* =========================================================================
-          KEY STATS CARDS: AUROC, LATENCY, DEPTH, SYNTHETIC VOLUMES
+          KEY STATS CARDS: PR-AUC, AUROC, LATENCY, DEPTH, SYNTHETIC VOLUMES
           ========================================================================= */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Metric 1: PR-AUC (User requested 79.0179%) */}
+        <div className="p-5 rounded-[22px] bg-neutral-900/60 border border-white/[0.08]">
+          <span className="text-xs font-mono text-neutral-400 block mb-1">Model PR-AUC</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-white font-[family-name:var(--font-montserrat)]">
+              79.0179%
+            </span>
+            <span className="text-xs font-mono text-emerald-400 font-medium">0.7902</span>
+          </div>
+          <span className="text-[11px] text-neutral-500 mt-1 block">Precision-Recall curve</span>
+        </div>
+
+        {/* Metric 2: Model AUROC */}
         <div className="p-5 rounded-[22px] bg-neutral-900/60 border border-white/[0.08]">
           <span className="text-xs font-mono text-neutral-400 block mb-1">Model AUROC</span>
           <div className="flex items-baseline gap-2">
@@ -280,6 +293,7 @@ export function XGBoostView() {
           <span className="text-[11px] text-neutral-500 mt-1 block">Log-loss objective optimized</span>
         </div>
 
+        {/* Metric 3: Inference Latency */}
         <div className="p-5 rounded-[22px] bg-neutral-900/60 border border-white/[0.08]">
           <span className="text-xs font-mono text-neutral-400 block mb-1">Inference Latency</span>
           <div className="flex items-baseline gap-2">
@@ -289,6 +303,7 @@ export function XGBoostView() {
           <span className="text-[11px] text-neutral-500 mt-1 block">Sub-millisecond edge scoring</span>
         </div>
 
+        {/* Metric 4: Tree Architecture */}
         <div className="p-5 rounded-[22px] bg-neutral-900/60 border border-white/[0.08]">
           <span className="text-xs font-mono text-neutral-400 block mb-1">Tree Architecture</span>
           <div className="flex items-baseline gap-2">
@@ -298,6 +313,7 @@ export function XGBoostView() {
           <span className="text-[11px] text-neutral-500 mt-1 block">scale_pos_weight = 14.2</span>
         </div>
 
+        {/* Metric 5: Augmented Corpus */}
         <div className="p-5 rounded-[22px] bg-neutral-900/60 border border-white/[0.08]">
           <span className="text-xs font-mono text-neutral-400 block mb-1">Augmented Corpus</span>
           <div className="flex items-baseline gap-2">
@@ -656,6 +672,8 @@ export function XGBoostView() {
               <div>Estimators: <span className="text-white">120 trees</span></div>
               <div>Max Depth: <span className="text-white">6</span></div>
               <div>Learning Rate: <span className="text-white">0.05</span></div>
+              <div>PR-AUC: <span className="text-emerald-400 font-semibold">79.0179%</span></div>
+              <div>ROC-AUC: <span className="text-white">0.9942</span></div>
               <div>Subsample: <span className="text-white">0.85</span></div>
               <div>Colsample: <span className="text-white">0.80</span></div>
             </div>
