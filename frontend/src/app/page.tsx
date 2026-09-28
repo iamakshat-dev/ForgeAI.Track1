@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { CleanGauge } from '../components/clean-gauge';
 import { LiveLogStream } from '../components/live-log-stream';
 import { AwsPayloadModal } from '../components/aws-payload-modal';
 import { IncidentDetailModal } from '../components/incident-detail-modal';
@@ -179,8 +178,8 @@ export default function Home() {
                 </div>
 
                 {/* Upper Deck Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-                  {/* Left Column (Light side): Headline, Pills, Big Metric + Gauge, Sub-Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                  {/* Left Column: Headline, Scope Pills, Big Metric (no gauge), Sub-Cards */}
                   <div className="lg:col-span-6 flex flex-col justify-between">
                     <div>
                       {/* Headline with dark text gradient */}
@@ -189,12 +188,12 @@ export default function Home() {
                       </h1>
 
                       {/* Scope filter pills */}
-                      <div className="flex items-center gap-2 mb-8">
+                      <div className="flex items-center gap-2 mb-6">
                         <button
                           onClick={() => setWindowScope('60s')}
                           className={`px-3.5 py-1 text-xs rounded-full border transition-all cursor-pointer font-[family-name:var(--font-montserrat)] ${
                             windowScope === '60s'
-                              ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
+                              ? 'border-neutral-900 bg-neutral-900 text-white font-medium shadow-sm'
                               : 'border-neutral-300 text-neutral-600 bg-white/70 hover:bg-white'
                           }`}
                         >
@@ -204,7 +203,7 @@ export default function Home() {
                           onClick={() => setWindowScope('300s')}
                           className={`px-3.5 py-1 text-xs rounded-full border transition-all cursor-pointer font-[family-name:var(--font-montserrat)] ${
                             windowScope === '300s'
-                              ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
+                              ? 'border-neutral-900 bg-neutral-900 text-white font-medium shadow-sm'
                               : 'border-neutral-300 text-neutral-600 bg-white/70 hover:bg-white'
                           }`}
                         >
@@ -212,40 +211,33 @@ export default function Home() {
                         </button>
                       </div>
 
-                      {/* Big Number and Gauge Placed Directly Side-by-Side */}
-                      <div className="flex items-center gap-6 my-2">
-                        <div>
-                          <span className="text-xs font-mono text-neutral-500 font-medium block mb-1">
-                            {currentZScore > 0 ? `+${currentZScore}σ` : `${currentZScore}σ`} vs baseline
+                      {/* Big Metric Score: Clean, bold and uncluttered without the gauge */}
+                      <div className="my-3">
+                        <span className="text-xs font-mono text-neutral-500 font-medium block mb-1">
+                          {currentZScore > 0 ? `+${currentZScore}σ` : `${currentZScore}σ`} vs baseline
+                        </span>
+                        <div className="flex items-baseline gap-4">
+                          <span className="text-7xl sm:text-8xl font-bold font-[family-name:var(--font-montserrat)] tracking-tight text-gradient-dark leading-none">
+                            {stabilityIndex}
                           </span>
-                          <div className="flex items-baseline gap-3">
-                            <span className="text-6xl sm:text-7xl font-bold font-[family-name:var(--font-montserrat)] tracking-tight text-gradient-dark leading-none">
-                              {stabilityIndex}
+                          <div className="flex flex-col text-xs text-neutral-500 leading-tight">
+                            <span className="font-bold text-neutral-900 font-[family-name:var(--font-montserrat)] text-sm">
+                              {currentErrorRate > 0.03
+                                ? 'Critical'
+                                : currentErrorRate > 0.015
+                                ? 'Elevated'
+                                : 'Excellent'}
                             </span>
-                            <div className="flex flex-col text-[11px] text-neutral-500 leading-tight">
-                              <span className="font-semibold text-neutral-800 font-[family-name:var(--font-montserrat)]">
-                                {currentErrorRate > 0.03
-                                  ? 'Critical'
-                                  : currentErrorRate > 0.015
-                                  ? 'Elevated'
-                                  : 'Excellent'}
-                              </span>
-                              <span>Checked Continuously</span>
-                            </div>
+                            <span className="text-neutral-500 mt-0.5">Checked Continuously</span>
                           </div>
-                        </div>
-
-                        {/* Radial Arc Gauge: needle smoothly aligned */}
-                        <div className="shrink-0 pl-2">
-                          <CleanGauge score={stabilityIndex} />
                         </div>
                       </div>
                     </div>
 
-                    {/* Two Floating White Sub-Cards (Net Worth & Total Debt counterpart) */}
-                    <div className="grid grid-cols-2 gap-4 mt-10">
+                    {/* Two Floating White Sub-Cards: Aligned horizontally & matching right column height */}
+                    <div className="grid grid-cols-2 gap-4 mt-6">
                       {/* Card 1: Rolling Error Rate */}
-                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
+                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-neutral-200/90 flex flex-col justify-between h-[145px]">
                         <div className="flex items-center justify-between">
                           <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
                             <Activity className="w-4 h-4" />
@@ -258,9 +250,9 @@ export default function Home() {
                             <ArrowUpRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <div>
-                          <span className="text-[11px] font-medium text-neutral-500 block mb-0.5 font-[family-name:var(--font-montserrat)]">
-                            Rolling Error Rate
+                        <div className="flex items-baseline justify-between mt-auto">
+                          <span className="text-xs font-semibold text-neutral-500 font-[family-name:var(--font-montserrat)]">
+                            Rolling Error
                           </span>
                           <span className="text-2xl font-bold font-mono tracking-tight text-neutral-950">
                             {(currentErrorRate * 100).toFixed(2)}%
@@ -269,10 +261,10 @@ export default function Home() {
                       </div>
 
                       {/* Card 2: Z-Score Deviation */}
-                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
+                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-neutral-200/90 flex flex-col justify-between h-[145px]">
                         <div className="flex items-center justify-between">
-                          <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
-                            <AlertTriangle className="w-4 h-4 text-amber-600" />
+                          <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-amber-600">
+                            <AlertTriangle className="w-4 h-4" />
                           </div>
                           <button
                             onClick={resetNominal}
@@ -282,9 +274,9 @@ export default function Home() {
                             <ArrowUpRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <div>
-                          <span className="text-[11px] font-medium text-neutral-500 block mb-0.5 font-[family-name:var(--font-montserrat)]">
-                            Z-Score Deviation
+                        <div className="flex items-baseline justify-between mt-auto">
+                          <span className="text-xs font-semibold text-neutral-500 font-[family-name:var(--font-montserrat)]">
+                            Z-Score Dev
                           </span>
                           <span
                             className={`text-2xl font-bold font-mono tracking-tight ${
@@ -298,10 +290,10 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Right Column: Sits over the glowing amber/dark transition */}
+                  {/* Right Column: 2x2 Grid of cards with exact matching height h-[145px] */}
                   <div className="lg:col-span-6 grid grid-cols-2 gap-4">
-                    {/* Card 1 (Top-Left): Frosted Dark Card (Credit Card Use counterpart) */}
-                    <div className="rounded-[22px] p-5 shadow-2xl bg-gradient-to-br from-[#2D3748]/90 via-[#1E293B]/95 to-[#0F172A]/95 text-white backdrop-blur-xl border border-white/20 flex flex-col justify-between h-[155px]">
+                    {/* Card 1 (Top-Left): Frosted Dark Card */}
+                    <div className="rounded-[22px] p-5 shadow-2xl bg-gradient-to-br from-[#2D3748]/90 via-[#1E293B]/95 to-[#0F172A]/95 text-white backdrop-blur-xl border border-white/20 flex flex-col justify-between h-[145px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-neutral-300 font-[family-name:var(--font-montserrat)]">
                           Sliding Error (60s)
@@ -315,7 +307,7 @@ export default function Home() {
                         </button>
                       </div>
                       <div>
-                        <div className="text-3xl font-bold font-mono tracking-tight text-white mb-2">
+                        <div className="text-3xl font-bold font-mono tracking-tight text-white mb-1.5">
                           {(currentErrorRate * 100).toFixed(1)}%
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -327,9 +319,9 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Card 2 (Top-Right): Crisp White Card (Payment History counterpart) */}
+                    {/* Card 2 (Top-Right): Crisp White Card */}
                     <div
-                      className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[155px] cursor-pointer hover:border-neutral-300 transition-colors"
+                      className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[145px] cursor-pointer hover:border-neutral-300 transition-colors"
                       onClick={() => setActiveTab('SINKS')}
                     >
                       <div className="flex items-center justify-between">
@@ -348,8 +340,8 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Card 3 (Bottom-Left): Ingest Rate with Multi-Peak Sparkline */}
-                    <div className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[155px]">
+                    {/* Card 3 (Bottom-Left): Ingest Rate with Sparkline */}
+                    <div className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[145px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-neutral-600 font-[family-name:var(--font-montserrat)]">
                           Ingest Rate
@@ -386,7 +378,7 @@ export default function Home() {
                     </div>
 
                     {/* Card 4 (Bottom-Right): Buffer Health with Wave Sparkline */}
-                    <div className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[155px]">
+                    <div className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[145px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-neutral-600 font-[family-name:var(--font-montserrat)]">
                           Buffer Health
@@ -423,10 +415,10 @@ export default function Home() {
             {/* LOWER HALF: PURE DARK TELEMETRY WITH LUMINOUS GRADIENT HEADINGS */}
             <section className="w-full bg-[#08090C] py-10 px-6 sm:px-10 lg:px-14 flex-1">
               <div className="max-w-7xl mx-auto space-y-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   {/* Left: Sliding Window Error History */}
                   <div className="lg:col-span-7 flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-5">
                       <h2 className="text-2xl font-bold tracking-tight text-gradient-luminous font-[family-name:var(--font-montserrat)]">
                         Sliding Window Error History
                       </h2>
@@ -447,15 +439,22 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Stem Chart with Y-Axis & Tooltip */}
-                    <div className="relative w-full h-[240px] bg-[#0C0E14] rounded-[22px] border border-white/[0.08] p-6 flex flex-col justify-between select-none">
+                    {/* Stem Chart with Y-Axis, Guidelines & Floating Tooltip */}
+                    <div className="relative w-full h-[250px] bg-[#0C0E14] rounded-[22px] border border-white/[0.08] p-6 flex flex-col justify-between select-none">
                       <div className="relative flex-1 flex items-end">
+                        {/* Y-Axis Labels */}
                         <div className="absolute left-0 top-0 bottom-4 flex flex-col justify-between text-[11px] font-mono text-neutral-500 pr-4 select-none">
                           <span>5.0%</span>
                           <span>2.5%</span>
                           <span>0.0%</span>
                         </div>
 
+                        {/* Horizontal Guidelines across chart */}
+                        <div className="absolute left-12 right-0 top-1 border-b border-white/[0.05] border-dashed pointer-events-none" />
+                        <div className="absolute left-12 right-0 top-1/2 -translate-y-1/2 border-b border-white/[0.05] border-dashed pointer-events-none" />
+                        <div className="absolute left-12 right-0 bottom-3 border-b border-white/[0.05] border-dashed pointer-events-none" />
+
+                        {/* Stems */}
                         <div className="ml-12 flex-1 h-full flex items-end justify-between gap-3 pt-6 pb-2">
                           {telemetryHistory.slice(-14).map((pt, idx) => {
                             const isSpike = pt.isSpike || pt.errorRate > 0.03;
@@ -472,14 +471,14 @@ export default function Home() {
                                 <div
                                   className={`w-4 h-[2px] rounded-full transition-all ${
                                     isSpike
-                                      ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]'
+                                      ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]'
                                       : 'bg-neutral-400'
                                   }`}
                                 />
                                 <div
                                   style={{ height: `${heightPct}%` }}
                                   className={`w-[1.5px] transition-all ${
-                                    isSpike ? 'bg-orange-500/80' : 'bg-neutral-700 group-hover:bg-neutral-500'
+                                    isSpike ? 'bg-orange-500' : 'bg-neutral-700 group-hover:bg-neutral-500'
                                   }`}
                                 />
                               </div>
@@ -488,7 +487,7 @@ export default function Home() {
                         </div>
 
                         {showTooltip && (
-                          <div className="absolute top-2 left-1/3 p-3 rounded-xl bg-neutral-900/95 border border-white/[0.12] backdrop-blur-md shadow-2xl flex items-center gap-3 z-20">
+                          <div className="absolute top-1 right-4 p-3 rounded-xl bg-neutral-900/95 border border-white/[0.12] backdrop-blur-md shadow-2xl flex items-center gap-3 z-20">
                             <div className="w-1.5 h-6 rounded-full bg-orange-500" />
                             <div>
                               <div className="flex items-baseline gap-1.5">
@@ -517,15 +516,15 @@ export default function Home() {
 
                       <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 pt-3 border-t border-white/[0.06]">
                         <span>Sliding Window: 60s</span>
-                        <span className="text-orange-400/80">3.0σ Anomaly Boundary</span>
+                        <span className="text-orange-400/80 font-medium">3.0σ Anomaly Boundary</span>
                         <span>Click stem for Incident Detail</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Active Alerts Feed */}
+                  {/* Right: Active Alerts Feed (Height-aligned with Left Chart) */}
                   <div className="lg:col-span-5 flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-5">
                       <h2 className="text-2xl font-bold tracking-tight text-gradient-luminous font-[family-name:var(--font-montserrat)]">
                         Active Alerts
                       </h2>
@@ -537,11 +536,11 @@ export default function Home() {
                       </button>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       {alerts.slice(0, 2).map((alert, idx) => (
                         <div
                           key={alert.id}
-                          className="p-4 rounded-[20px] bg-neutral-900/80 border border-white/[0.08] hover:border-white/[0.16] transition-all flex items-center justify-between gap-4 cursor-pointer"
+                          className="p-5 rounded-[22px] bg-neutral-900/80 border border-white/[0.08] hover:border-white/[0.16] transition-all flex items-center justify-between gap-4 cursor-pointer h-[118px]"
                           onClick={() => setActiveIncident(alert)}
                         >
                           <div className="flex items-center gap-3.5 min-w-0">
