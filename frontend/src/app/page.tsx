@@ -8,6 +8,7 @@ import { AlertHistory } from '../components/alert-history';
 import { ConfigSettings } from '../components/config-settings';
 import { SinksStatus } from '../components/sinks-status';
 import { SmoothScroll } from '../components/smooth-scroll';
+import { XGBoostView } from '../components/xgboost-view';
 import { useTelemetryStream } from '../hooks/use-telemetry-stream';
 import { AnomalyAlert } from '../types/telemetry';
 import { DetectorConfig } from '../types/config';
@@ -39,7 +40,7 @@ export default function Home() {
     streamTick,
   } = useTelemetryStream();
 
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'HISTORY' | 'SINKS' | 'CONFIG'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'XGBOOST' | 'HISTORY' | 'SINKS' | 'CONFIG'>('DASHBOARD');
   const [windowScope, setWindowScope] = useState<'60s' | '300s'>('60s');
   const [showTooltip, setShowTooltip] = useState(true);
 
@@ -92,6 +93,16 @@ export default function Home() {
                   className="px-4 py-1.5 text-xs font-medium rounded-full bg-neutral-900 border border-white/[0.08] text-neutral-300 hover:text-white transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
                 >
                   Live Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab('XGBOOST')}
+                  className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer font-[family-name:var(--font-montserrat)] ${
+                    activeTab === 'XGBOOST'
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'bg-neutral-900 border border-white/[0.08] text-neutral-300 hover:text-white'
+                  }`}
+                >
+                  XGBoost & Data
                 </button>
                 <button
                   onClick={() => setActiveTab('HISTORY')}
@@ -165,6 +176,12 @@ export default function Home() {
                       className="px-4 py-1.5 text-xs font-semibold rounded-full bg-white text-black shadow-md transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
                     >
                       Stream Health
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('XGBOOST')}
+                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white/90 backdrop-blur-md transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
+                    >
+                      XGBoost & Data
                     </button>
                     <button
                       onClick={() => setActiveTab('HISTORY')}
@@ -656,6 +673,15 @@ export default function Home() {
               </div>
             </section>
           </>
+        )}
+
+        {/* =========================================================================
+            VIEW 1.5: XGBOOST MODEL & DATA AUGMENTATION VIEW
+            ========================================================================= */}
+        {activeTab === 'XGBOOST' && (
+          <div className="max-w-7xl w-full mx-auto px-6 sm:px-10 lg:px-14 py-8 flex-1">
+            <XGBoostView />
+          </div>
         )}
 
         {/* =========================================================================

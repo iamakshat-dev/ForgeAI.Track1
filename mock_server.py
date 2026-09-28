@@ -417,6 +417,167 @@ def get_sinks_status():
         }
     }
 
+# ----------------- XGBoost & Data Augmentation Endpoints -----------------
+
+class XGBoostPredictRequest(BaseModel):
+    error_rate: Optional[float] = 0.0035
+    z_score: Optional[float] = 0.2
+    status_5xx_ratio: Optional[float] = 0.02
+    request_velocity: Optional[float] = 1.0
+    latency_p99_ms: Optional[float] = 120.0
+
+def compute_xgboost_inference(features: dict) -> dict:
+    """Simulates an XGBoost gradient boosted trees decision for log anomaly detection."""
+    z_score = float(features.get("z_score", 0.0))
+    status_5xx = float(features.get("status_5xx_ratio", 0.0))
+    err_rate = float(features.get("error_rate", 0.0035))
+    velocity = float(features.get("request_velocity", 1.0))
+    latency = float(features.get("latency_p99_ms", 120.0))
+
+    # GBDT log-odds margin formula
+    margin = (
+        (z_score - 1.6) * 1.75 +
+        (status_5xx - 0.15) * 4.2 +
+        (err_rate * 100 - 1.2) * 1.35 +
+        (velocity - 1.0) * 0.85 +
+        ((latency - 250) / 300) * 0.65 - 1.7
+    )
+    # Logistic sigmoid
+    prob = 1.0 / (1.0 + math.exp(-max(-15.0, min(15.0, margin))))
+    prob = round(prob, 4)
+
+    is_anomaly = prob >= 0.50
+    confidence = "HIGH" if (prob >= 0.85 or prob <= 0.15) else "MODERATE"
+
+    # SHAP feature contributions
+    shap_zscore = round(max(-0.4, min(0.45, (z_score - 1.0) * 0.12)), 3)
+    shap_5xx = round(max(-0.35, min(0.40, (status_5xx - 0.1) * 0.45)), 3)
+    shap_rate = round(max(-0.25, min(0.30, (err_rate * 100 - 0.5) * 0.08)), 3)
+    shap_velocity = round(max(-0.15, min(0.20, (velocity - 1.0) * 0.06)), 3)
+
+    return {
+        "anomaly_probability": prob,
+        "classification": "ANOMALY" if is_anomaly else "NOMINAL",
+        "confidence": confidence,
+        "decision_threshold": 0.50,
+        "inference_latency_ms": round(1.05 + random.random() * 0.35, 2),
+        "shap_contributions": {
+            "rolling_error_zscore": shap_zscore,
+            "status_5xx_ratio": shap_5xx,
+            "error_rate_pct": shap_rate,
+            "request_velocity": shap_velocity,
+        }
+    }
+
+def generate_augmented_dataset(count: int = 18) -> list:
+    techniques = [
+        ("SMOTE Over-sampling", "SYNTHETIC_ANOMALY"),
+        ("Gaussian Jitter", "NOMINAL_AUGMENTED"),
+        ("Burst Cascade Synthesis", "SYNTHETIC_ANOMALY"),
+        ("Concept Drift Injection", "SYNTHETIC_ANOMALY"),
+        ("Nominal Boundary Scaling", "NOMINAL_AUGMENTED"),
+    ]
+    services = [
+        "auth-service.us-east-1",
+        "api-gateway.edge",
+        "billing-worker.prod",
+        "user-session.eu-west-1",
+        "order-dispatch.us-east-1"
+    ]
+    dataset = []
+
+    for _ in range(count):
+        tech, category = random.choice(techniques)
+        srv = random.choice(services)
+        sample_id = f"AUG-{random.randint(1000, 9999)}"
+
+        if category == "SYNTHETIC_ANOMALY":
+            err_rate = round(0.035 + random.random() * 0.035, 4)
+            z_score = round(3.2 + random.random() * 4.5, 2)
+            s5xx = round(0.65 + random.random() * 0.32, 2)
+            vel = round(2.1 + random.random() * 1.8, 2)
+            lat = round(750 + random.random() * 1400, 1)
+        else:
+            err_rate = round(0.0018 + random.random() * 0.003, 4)
+            z_score = round(-0.8 + random.random() * 1.6, 2)
+            s5xx = round(0.01 + random.random() * 0.06, 2)
+            vel = round(0.9 + random.random() * 0.3, 2)
+            lat = round(85 + random.random() * 110, 1)
+
+        feats = {
+            "error_rate": err_rate,
+            "z_score": z_score,
+            "status_5xx_ratio": s5xx,
+            "request_velocity": vel,
+            "latency_p99_ms": lat,
+        }
+        pred = compute_xgboost_inference(feats)
+
+        dataset.append({
+            "id": sample_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "service": srv,
+            "technique": tech,
+            "category": category,
+            "features": feats,
+            "prediction": pred,
+        })
+    return dataset
+
+augmented_cache: list = generate_augmented_dataset(18)
+
+@app.get("/api/v1/xgboost/info")
+def get_xgboost_info():
+    return {
+        "model": "XGBoost v2.1.4 Classifier",
+        "objective": "binary:logistic",
+        "eval_metric": "logloss",
+        "n_estimators": 120,
+        "max_depth": 6,
+        "learning_rate": 0.05,
+        "subsample": 0.85,
+        "colsample_bytree": 0.8,
+        "scale_pos_weight": 14.2,
+        "metrics": {
+            "auroc": 0.9942,
+            "f1_score": 0.9814,
+            "precision": 0.985,
+            "recall": 0.978,
+            "avg_inference_latency_ms": 1.18,
+        },
+        "feature_importances": [
+            {"name": "rolling_error_zscore", "gain": 0.386, "description": "Normalized deviation from 60s baseline"},
+            {"name": "status_5xx_ratio", "gain": 0.264, "description": "Ratio of 500-504 server faults in window"},
+            {"name": "request_velocity", "gain": 0.158, "description": "Rate of change in log throughput"},
+            {"name": "service_entropy", "gain": 0.123, "description": "Dispersion of errors across microservices"},
+            {"name": "latency_p99_ms", "gain": 0.069, "description": "99th percentile response time estimate"},
+        ],
+    }
+
+@app.get("/api/v1/xgboost/augmented-data")
+def get_augmented_data():
+    return {
+        "total": len(augmented_cache),
+        "syntheticCount": sum(1 for d in augmented_cache if d["category"] == "SYNTHETIC_ANOMALY"),
+        "nominalCount": sum(1 for d in augmented_cache if d["category"] == "NOMINAL_AUGMENTED"),
+        "samples": augmented_cache,
+    }
+
+@app.post("/api/v1/xgboost/predict")
+def predict_xgboost(payload: XGBoostPredictRequest):
+    return compute_xgboost_inference(payload.dict())
+
+@app.post("/api/v1/xgboost/augment")
+def refresh_augmented_data(count: int = 18):
+    global augmented_cache
+    augmented_cache = generate_augmented_dataset(count)
+    return {
+        "success": True,
+        "message": f"Synthesized {count} new augmented samples via SMOTE, Gaussian Jitter & Drift Injection",
+        "total": len(augmented_cache),
+        "samples": augmented_cache,
+    }
+
 # ----------------- WebSocket Endpoint -----------------
 
 @app.websocket("/ws/stream")
