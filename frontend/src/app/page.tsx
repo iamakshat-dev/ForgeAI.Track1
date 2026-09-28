@@ -13,12 +13,10 @@ import {
   ShieldAlert,
   AlertTriangle,
   Check,
-  RefreshCw,
-  Sparkles,
   Server,
   Cloud,
+  X,
 } from 'lucide-react';
-import gsap from 'gsap';
 
 export default function Home() {
   const {
@@ -27,7 +25,6 @@ export default function Home() {
     logs,
     isStreaming,
     setIsStreaming,
-    isSimulatingSpike,
     triggerSpike,
     resetNominal,
     acknowledgeAlert,
@@ -36,92 +33,72 @@ export default function Home() {
     currentErrorRate,
     currentZScore,
     activeAnomaliesCount,
-    reliabilityScore,
   } = useTelemetryStream();
 
   const [inspectingAlert, setInspectingAlert] = useState<AnomalyAlert | null>(null);
-  const [activeTab, setActiveTab] = useState<'Telemetry' | 'Alerts' | 'AWS'>('Telemetry');
-  const [windowScope, setWindowScope] = useState<'60s' | '300s'>('60s');
-  const [hoveredPoint, setHoveredPoint] = useState<TelemetryDataPoint | null>(null);
+  const [activeTab, setActiveTab] = useState<'Karma' | 'Credits' | 'Money'>('Karma');
+  const [scopeFilter, setScopeFilter] = useState<'60s' | '300s'>('60s');
+  const [showTooltip, setShowTooltip] = useState(true);
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.inspo-fade', {
-        opacity: 0,
-        y: 10,
-        duration: 0.5,
-        stagger: 0.05,
-        ease: 'power2.out',
-      });
-    });
-
-    return () => ctx.revert();
-  }, []);
-
-  const handleTraceLogs = () => {
-    terminalRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Compute a clean 3-digit score matching the reference image (e.g. 832)
+  const stabilityIndex = Math.max(720, Math.min(990, Math.round(990 - currentErrorRate * 3500)));
 
   return (
     <SmoothScroll>
-      <div className="min-h-screen bg-[#08090D] text-[#EDEDED] font-sans flex flex-col">
+      <div className="min-h-screen bg-[#08090C] text-[#EDEDED] font-sans flex flex-col antialiased">
         {/* =========================================================================
-            UPPER HALF: LIGHT TELEMETRY DECK WITH AMBER AMBIENT MESH (INSPIRATION LAYOUT)
+            UPPER HALF: LIGHT DECK WITH AMBER GLOW (PIXEL-PERFECT INSPIRATION LAYOUT)
             ========================================================================= */}
-        <section className="relative w-full bg-[#F5F4F0] text-neutral-900 pt-7 pb-12 px-4 sm:px-8 lg:px-12 overflow-hidden border-b border-neutral-300/70">
-          {/* Subtle warm amber ambient glow in center-right */}
-          <div className="absolute top-0 right-1/4 w-[550px] h-[450px] bg-gradient-to-br from-[#FF9800]/35 via-[#F59E0B]/20 to-transparent blur-[85px] rounded-full pointer-events-none" />
-          <div className="absolute top-1/4 right-1/3 w-[300px] h-[300px] bg-gradient-to-tr from-[#E65100]/20 via-[#FFA726]/15 to-transparent blur-[65px] rounded-full pointer-events-none" />
+        <section className="relative w-full bg-[#F5F4F0] text-neutral-900 pt-8 pb-14 px-6 sm:px-10 lg:px-14 overflow-hidden border-b border-neutral-300">
+          {/* Warm Amber Glowing Ambient Backdrop centered behind the right cards */}
+          <div className="absolute top-[-30px] right-[20%] w-[580px] h-[480px] bg-gradient-to-br from-[#F59E0B]/35 via-[#F97316]/25 to-transparent blur-[90px] rounded-full pointer-events-none" />
+          <div className="absolute top-[80px] right-[32%] w-[320px] h-[320px] bg-gradient-to-tr from-[#EA580C]/20 via-[#FBBF24]/20 to-transparent blur-[70px] rounded-full pointer-events-none" />
 
           <div className="relative z-10 max-w-7xl mx-auto">
-            {/* Top Navigation Bar inside light surface */}
-            <div className="flex items-center justify-between gap-4 mb-7">
-              {/* Brand Logo & Project Name */}
+            {/* Top Navigation Row */}
+            <div className="flex items-center justify-between gap-4 mb-9">
+              {/* Brand Logo & Name */}
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white">
                   <Activity className="w-4 h-4" />
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-base font-bold tracking-tight text-neutral-950">
-                    ForgeAI
-                  </span>
-                  <span className="text-xs font-mono text-neutral-500 font-medium">
-                    / Log Anomaly Detector
-                  </span>
-                </div>
+                <span className="text-sm font-bold tracking-tight text-neutral-950 font-sans">
+                  ForgeAI
+                </span>
+                <span className="text-xs text-neutral-400 font-mono">/ Telemetry</span>
               </div>
 
-              {/* Top Navigation Pills */}
+              {/* Top Navigation Pills (Karma / Credits / Money style) */}
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setActiveTab('Telemetry')}
+                  onClick={() => setActiveTab('Karma')}
                   className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer ${
-                    activeTab === 'Telemetry'
+                    activeTab === 'Karma'
                       ? 'bg-black text-white shadow-sm'
                       : 'bg-white/80 border border-neutral-300 text-neutral-700 hover:bg-white'
                   }`}
                 >
-                  Live Telemetry
+                  Stream Health
                 </button>
                 <button
-                  onClick={() => setActiveTab('Alerts')}
+                  onClick={() => setActiveTab('Credits')}
                   className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer ${
-                    activeTab === 'Alerts'
+                    activeTab === 'Credits'
                       ? 'bg-black text-white shadow-sm'
                       : 'bg-white/80 border border-neutral-300 text-neutral-700 hover:bg-white'
                   }`}
                 >
-                  Alert Feed ({activeAnomaliesCount})
+                  Alerts ({activeAnomaliesCount})
                 </button>
                 <button
                   onClick={() => {
-                    setActiveTab('AWS');
+                    setActiveTab('Money');
                     if (alerts.length > 0) setInspectingAlert(alerts[0]);
                   }}
                   className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer ${
-                    activeTab === 'AWS'
+                    activeTab === 'Money'
                       ? 'bg-black text-white shadow-sm'
                       : 'bg-white/80 border border-neutral-300 text-neutral-700 hover:bg-white'
                   }`}
@@ -131,82 +108,90 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Main Content Grid: Left Hero Metrics vs Right 2x2 Floating Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Main Upper Grid: Left Hero vs Right 2x2 Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
               {/* -------------------------------------------------------------
-                  LEFT COLUMN: Stability Index, Arc Gauge, and 2 Sub-Cards
+                  LEFT COLUMN: Headline, Pills, Focal Number + Gauge, Sub-Cards
                   ------------------------------------------------------------- */}
-              <div className="lg:col-span-6 flex flex-col justify-between inspo-fade">
-                {/* Title & Scope Pills */}
-                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-950 mb-3">
-                  System Stability
-                </h1>
+              <div className="lg:col-span-6 flex flex-col justify-between">
+                <div>
+                  <h1 className="text-4xl font-semibold tracking-tight text-neutral-950 mb-3">
+                    Stream Stability
+                  </h1>
 
-                <div className="flex items-center gap-2 mb-6">
-                  <button
-                    onClick={() => setWindowScope('60s')}
-                    className={`px-3 py-1 text-xs rounded-full border transition-all cursor-pointer ${
-                      windowScope === '60s'
-                        ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
-                        : 'border-neutral-300 text-neutral-600 bg-white/70 hover:bg-white'
-                    }`}
-                  >
-                    60s Window
-                  </button>
-                  <button
-                    onClick={() => setWindowScope('300s')}
-                    className={`px-3 py-1 text-xs rounded-full border transition-all cursor-pointer ${
-                      windowScope === '300s'
-                        ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
-                        : 'border-neutral-300 text-neutral-600 bg-white/70 hover:bg-white'
-                    }`}
-                  >
-                    300s Rolling
-                  </button>
-                </div>
+                  {/* Scope filter pills */}
+                  <div className="flex items-center gap-2 mb-8">
+                    <button
+                      onClick={() => setScopeFilter('60s')}
+                      className={`px-3.5 py-1 text-xs rounded-full border transition-all cursor-pointer ${
+                        scopeFilter === '60s'
+                          ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
+                          : 'border-neutral-300 text-neutral-600 bg-white/70 hover:bg-white'
+                      }`}
+                    >
+                      60s Window
+                    </button>
+                    <button
+                      onClick={() => setScopeFilter('300s')}
+                      className={`px-3.5 py-1 text-xs rounded-full border transition-all cursor-pointer ${
+                        scopeFilter === '300s'
+                          ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
+                          : 'border-neutral-300 text-neutral-600 bg-white/70 hover:bg-white'
+                      }`}
+                    >
+                      300s Rolling
+                    </button>
+                  </div>
 
-                {/* Big Metric + Radial Arc Gauge */}
-                <div className="flex items-center justify-between gap-6 my-2">
-                  <div>
-                    <span className="text-xs font-mono text-neutral-500 block mb-0.5">
-                      {currentZScore > 0 ? `+${currentZScore}σ` : `${currentZScore}σ`} vs baseline
-                    </span>
-                    <div className="text-6xl sm:text-7xl font-bold font-mono tracking-tighter text-neutral-950 leading-none">
-                      {reliabilityScore}%
+                  {/* Big Number and Gauge Placed Directly Side-by-Side */}
+                  <div className="flex items-center gap-6 my-2">
+                    {/* Big Metric Display */}
+                    <div>
+                      <span className="text-xs font-mono text-neutral-500 font-medium block mb-1">
+                        {currentZScore > 0 ? `+${currentZScore}σ` : `${currentZScore}σ`} vs baseline
+                      </span>
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-6xl sm:text-7xl font-bold font-mono tracking-tight text-neutral-950 leading-none">
+                          {stabilityIndex}
+                        </span>
+                        <div className="flex flex-col text-[11px] text-neutral-500 leading-tight">
+                          <span className="font-semibold text-neutral-800">
+                            {currentErrorRate > 0.03
+                              ? 'Critical'
+                              : currentErrorRate > 0.015
+                              ? 'Elevated'
+                              : 'Excellent'}
+                          </span>
+                          <span>Checked Continuously</span>
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-xs text-neutral-600 mt-2 block font-medium">
-                      {currentErrorRate > 0.03
-                        ? 'Critical Anomaly Detected'
-                        : currentErrorRate > 0.015
-                        ? 'Elevated Deviation'
-                        : 'Nominal Baseline · Monitored Real-Time'}
-                    </span>
-                  </div>
 
-                  {/* Clean SVG Arc Gauge */}
-                  <div className="shrink-0">
-                    <CleanGauge errorRate={currentErrorRate} />
+                    {/* Radial Arc Gauge - sits immediately next to the number */}
+                    <div className="shrink-0 pl-2">
+                      <CleanGauge errorRate={currentErrorRate} />
+                    </div>
                   </div>
                 </div>
 
-                {/* Two Floating White Cards Below */}
-                <div className="grid grid-cols-2 gap-4 mt-7">
-                  {/* Sub-Card 1: Rolling Error Rate */}
-                  <div className="bg-white/95 rounded-2xl p-4 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-neutral-200/80 flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
-                        <Activity className="w-3.5 h-3.5" />
+                {/* Two Floating White Sub-Cards (Net Worth & Total Debt counterpart) */}
+                <div className="grid grid-cols-2 gap-4 mt-10">
+                  {/* Card 1: Rolling Error Rate */}
+                  <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
+                        <Activity className="w-4 h-4" />
                       </div>
                       <button
                         onClick={triggerSpike}
                         className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 transition-transform cursor-pointer"
                         title="Simulate Error Burst Spike"
                       >
-                        <Sparkles className="w-3.5 h-3.5" />
+                        <ArrowUpRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <div>
-                      <span className="text-[11px] font-medium text-neutral-500 block">
+                      <span className="text-[11px] font-medium text-neutral-500 block mb-0.5">
                         Rolling Error Rate
                       </span>
                       <span className="text-2xl font-bold font-mono tracking-tight text-neutral-950">
@@ -215,22 +200,22 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Sub-Card 2: Deviation Z-Score */}
-                  <div className="bg-white/95 rounded-2xl p-4 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-neutral-200/80 flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                  {/* Card 2: Z-Score Deviation */}
+                  <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
+                        <AlertTriangle className="w-4 h-4 text-amber-600" />
                       </div>
                       <button
                         onClick={resetNominal}
                         className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 transition-transform cursor-pointer"
-                        title="Reset to Baseline"
+                        title="Reset Baseline"
                       >
-                        <RefreshCw className="w-3.5 h-3.5" />
+                        <ArrowUpRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <div>
-                      <span className="text-[11px] font-medium text-neutral-500 block">
+                      <span className="text-[11px] font-medium text-neutral-500 block mb-0.5">
                         Z-Score Deviation
                       </span>
                       <span
@@ -246,11 +231,11 @@ export default function Home() {
               </div>
 
               {/* -------------------------------------------------------------
-                  RIGHT COLUMN: 2x2 Floating Cards on Amber Ambient Backdrop
+                  RIGHT COLUMN: 2x2 Perfectly Symmetrical Floating Cards
                   ------------------------------------------------------------- */}
-              <div className="lg:col-span-6 grid grid-cols-2 gap-4 inspo-fade">
-                {/* Card 1: Frosted Gradient Mesh Card (Sliding Error Rate) */}
-                <div className="relative rounded-2xl p-5 shadow-xl bg-gradient-to-br from-[#2D3748]/90 via-[#1A202C]/90 to-[#0F172A]/90 text-white backdrop-blur-md border border-white/20 flex flex-col justify-between min-h-[145px]">
+              <div className="lg:col-span-6 grid grid-cols-2 gap-4">
+                {/* Card 1 (Top-Left): Frosted Dark Card (Credit Card Use counterpart) */}
+                <div className="rounded-[22px] p-5 shadow-xl bg-gradient-to-br from-[#334155]/95 via-[#1E293B]/95 to-[#0F172A]/95 text-white backdrop-blur-md border border-white/20 flex flex-col justify-between h-[155px]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-300">
                       Sliding Error (60s)
@@ -267,7 +252,7 @@ export default function Home() {
                     <div className="text-3xl font-bold font-mono tracking-tight text-white mb-2">
                       {(currentErrorRate * 100).toFixed(1)}%
                     </div>
-                    {/* Dot status scale */}
+                    {/* Dot status indicator from reference image */}
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-white" />
                       <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
@@ -277,11 +262,11 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Card 2: AWS Dispatch Target */}
-                <div className="bg-white/95 rounded-2xl p-5 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-neutral-200/80 flex flex-col justify-between min-h-[145px]">
+                {/* Card 2 (Top-Right): Pure Crisp White Card (Payment History counterpart) */}
+                <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[155px]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-600">AWS Dispatch</span>
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
                   <div>
                     <div className="text-3xl font-bold font-mono tracking-tight text-neutral-950">
@@ -293,8 +278,8 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Card 3: Ingestion Rate with Sparkline */}
-                <div className="bg-white/95 rounded-2xl p-5 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-neutral-200/80 flex flex-col justify-between min-h-[145px]">
+                {/* Card 3 (Bottom-Left): White Card with Multi-Peak Sparkline (Credit Age counterpart) */}
+                <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[155px]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-600">Ingest Rate</span>
                     <button
@@ -311,25 +296,29 @@ export default function Home() {
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-[11px] font-mono text-neutral-500">lines / sec</span>
-                      <svg className="w-16 h-5 overflow-visible" viewBox="0 0 60 20">
+                      {/* Multi-peak sparkline with small peak dots matching reference image */}
+                      <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
                         <path
-                          d="M 0 15 Q 15 5, 30 12 T 60 4"
+                          d="M 2 18 L 18 10 L 32 16 L 46 6 L 62 14 L 76 4"
                           fill="none"
-                          stroke="#171717"
+                          stroke="#18181B"
                           strokeWidth="1.5"
                           strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
-                        <circle cx="60" cy="4" r="2" fill="#171717" />
+                        <circle cx="18" cy="10" r="2" fill="#18181B" />
+                        <circle cx="46" cy="6" r="2" fill="#18181B" />
+                        <circle cx="76" cy="4" r="2" fill="#18181B" />
                       </svg>
                     </div>
                   </div>
                 </div>
 
-                {/* Card 4: Stream Buffer Health */}
-                <div className="bg-white/95 rounded-2xl p-5 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-neutral-200/80 flex flex-col justify-between min-h-[145px]">
+                {/* Card 4 (Bottom-Right): White Card with Wave Sparkline (Total Accounts counterpart) */}
+                <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[155px]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-600">Buffer Health</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
                       Zero Drop
                     </span>
                   </div>
@@ -338,16 +327,18 @@ export default function Home() {
                       99.9%
                     </div>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-[11px] font-mono text-neutral-500">Lossless</span>
-                      <svg className="w-16 h-5 overflow-visible" viewBox="0 0 60 20">
+                      <span className="text-[11px] font-mono text-neutral-500">Lossless Stream</span>
+                      {/* Wave sparkline with peak dots matching reference image */}
+                      <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
                         <path
-                          d="M 0 12 Q 20 18, 35 8 T 60 10"
+                          d="M 2 16 Q 16 6, 28 14 T 54 8 T 76 12"
                           fill="none"
                           stroke="#10B981"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                         />
-                        <circle cx="60" cy="10" r="2" fill="#10B981" />
+                        <circle cx="54" cy="8" r="2" fill="#10B981" />
+                        <circle cx="76" cy="12" r="2" fill="#10B981" />
                       </svg>
                     </div>
                   </div>
@@ -358,16 +349,18 @@ export default function Home() {
         </section>
 
         {/* =========================================================================
-            LOWER HALF: DARK TELEMETRY HISTORY & ACTIVE ALERT FEED
+            LOWER HALF: PURE DARK TELEMETRY & ACTIVE INCIDENTS (MATCHING SCORE HISTORY)
             ========================================================================= */}
-        <section className="w-full bg-[#08090D] py-10 px-4 sm:px-8 lg:px-12 flex-1">
+        <section className="w-full bg-[#08090C] py-10 px-6 sm:px-10 lg:px-14 flex-1">
           <div className="max-w-7xl mx-auto space-y-10">
-            {/* Split: Sliding Error History on Left vs Alert Feed on Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Error History */}
+            {/* Split: Error History vs Active Incidents */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+              {/* -------------------------------------------------------------
+                  LEFT: Score History Counterpart (Sliding Window Error History)
+                  ------------------------------------------------------------- */}
               <div className="lg:col-span-7 flex flex-col justify-between">
-                {/* Header & Window Filters */}
-                <div className="flex items-center justify-between mb-5">
+                {/* Header with Title and Time Window Filters */}
+                <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-white tracking-tight">
                     Sliding Window Error History
                   </h2>
@@ -388,92 +381,110 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Telemetry Stem Bar Chart with Floating Anomaly Tooltip */}
-                <div className="relative w-full aspect-[640/220] min-h-[220px] bg-[#0E1117] rounded-2xl border border-white/[0.08] p-5 select-none">
-                  {/* Stem columns */}
-                  <div className="h-full flex items-end justify-between gap-2 pt-8 pb-4 px-2">
-                    {telemetryHistory.slice(-18).map((pt, idx) => {
-                      const isSpike = pt.isSpike || pt.errorRate > 0.03;
-                      const heightPct = Math.min(100, Math.max(15, (pt.errorRate / 0.05) * 100));
-
-                      return (
-                        <div
-                          key={idx}
-                          className="relative flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
-                          onMouseEnter={() => setHoveredPoint(pt)}
-                          onMouseLeave={() => setHoveredPoint(null)}
-                          onClick={handleTraceLogs}
-                        >
-                          {/* Accent Cap (Orange on spikes as in reference photo) */}
-                          <div
-                            className={`w-full max-w-[12px] rounded-t-sm transition-all ${
-                              isSpike ? 'bg-orange-500 h-1.5' : 'bg-neutral-600 h-1'
-                            }`}
-                          />
-                          {/* Stem Body */}
-                          <div
-                            style={{ height: `${heightPct}%` }}
-                            className={`w-full max-w-[12px] transition-all ${
-                              isSpike
-                                ? 'bg-orange-500/25 border-x border-orange-500/40'
-                                : 'bg-white/[0.06] border-x border-white/[0.08] group-hover:bg-white/[0.12]'
-                            }`}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Floating Inspection Tooltip Card */}
-                  <div className="absolute top-4 left-1/3 p-3 rounded-xl bg-neutral-900/95 border border-white/[0.12] backdrop-blur-md shadow-2xl flex items-center gap-3">
-                    <div className="w-1.5 h-6 rounded-full bg-orange-500" />
-                    <div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-bold font-mono text-white">
-                          {hoveredPoint
-                            ? `${(hoveredPoint.errorRate * 100).toFixed(2)}%`
-                            : `${(currentErrorRate * 100).toFixed(2)}%`}
-                        </span>
-                        <span className="text-[10px] text-orange-400 font-mono font-medium">
-                          {hoveredPoint ? `+${hoveredPoint.zScore}σ` : `+${currentZScore}σ`}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-neutral-400 block">
-                        {currentErrorRate > 0.03
-                          ? 'Critical 3.0σ boundary breached'
-                          : 'Nominal sliding window rate'}
-                      </span>
+                {/* Chart Area with Real Stems, Y-Axis labels, and Floating Card */}
+                <div className="relative w-full h-[240px] bg-[#0C0E14] rounded-[22px] border border-white/[0.08] p-6 flex flex-col justify-between select-none">
+                  {/* Chart Body with Left Y-Axis and Stem Bars */}
+                  <div className="relative flex-1 flex items-end">
+                    {/* Y-Axis scale labels from reference image (850, 800, 750) */}
+                    <div className="absolute left-0 top-0 bottom-4 flex flex-col justify-between text-[11px] font-mono text-neutral-500 pr-4 select-none">
+                      <span>5.0%</span>
+                      <span>2.5%</span>
+                      <span>0.0%</span>
                     </div>
+
+                    {/* Stem Bars Container */}
+                    <div className="ml-12 flex-1 h-full flex items-end justify-between gap-3 pt-6 pb-2">
+                      {telemetryHistory.slice(-14).map((pt, idx) => {
+                        const isSpike = pt.isSpike || pt.errorRate > 0.03;
+                        // Stem height between 35% and 85% for authentic visual weight
+                        const heightPct = Math.min(88, Math.max(35, (pt.errorRate / 0.05) * 85));
+
+                        return (
+                          <div
+                            key={idx}
+                            className="relative flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
+                            onClick={() => terminalRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                          >
+                            {/* Horizontal Cap at Top of Stem (Orange for spike, white/gray for normal) */}
+                            <div
+                              className={`w-4 h-[2px] rounded-full transition-all ${
+                                isSpike
+                                  ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]'
+                                  : 'bg-neutral-400'
+                              }`}
+                            />
+                            {/* Vertical Line Stem */}
+                            <div
+                              style={{ height: `${heightPct}%` }}
+                              className={`w-[1.5px] transition-all ${
+                                isSpike ? 'bg-orange-500/80' : 'bg-neutral-700 group-hover:bg-neutral-500'
+                              }`}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Floating Inspection Card (Exact match of `816, moderate credit score` card in image 1) */}
+                    {showTooltip && (
+                      <div className="absolute top-2 left-1/3 p-3 rounded-xl bg-neutral-900/95 border border-white/[0.12] backdrop-blur-md shadow-2xl flex items-center gap-3 z-20">
+                        <div className="w-1.5 h-6 rounded-full bg-orange-500" />
+                        <div>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-sm font-bold font-mono text-white">
+                              {(currentErrorRate * 100).toFixed(2)}%
+                            </span>
+                            <span className="text-[10px] text-orange-400 font-mono font-medium">
+                              +{currentZScore}σ
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-neutral-400 block">
+                            {currentErrorRate > 0.03
+                              ? 'Critical threshold breached'
+                              : 'Nominal sliding window rate'}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setShowTooltip(false)}
+                          className="text-neutral-500 hover:text-white transition-colors p-0.5 cursor-pointer ml-1"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Baseline boundary footer */}
-                  <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 pt-2 border-t border-white/[0.06]">
+                  {/* Chart Subtitle Footer */}
+                  <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 pt-3 border-t border-white/[0.06]">
                     <span>Sliding Window: 60s</span>
-                    <span className="text-orange-400/80">Anomaly Spike Threshold: 3.0σ</span>
-                    <span>Lossless Buffer</span>
+                    <span className="text-orange-400/80">3.0σ Anomaly Boundary</span>
+                    <span>Zero Data Loss</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Active Anomaly Alerts */}
+              {/* -------------------------------------------------------------
+                  RIGHT: Credit Offers Counterpart (Active Incident Alerts)
+                  ------------------------------------------------------------- */}
               <div className="lg:col-span-5 flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-5">
+                {/* Header with Title and Count indicator */}
+                <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-white tracking-tight">Active Alerts</h2>
                   <span className="text-xs font-mono text-neutral-400">
-                    {alerts.length} generated
+                    {alerts.length} active breaches
                   </span>
                 </div>
 
-                {/* Alert Cards with AWS Dispatch Badges */}
+                {/* Dark Frosted Incident Cards (styled like Goldman Sachs & Bank of America in image 1) */}
                 <div className="space-y-3">
                   {alerts.slice(0, 2).map((alert, idx) => (
                     <div
                       key={alert.id}
-                      className="p-4 rounded-2xl bg-neutral-900/80 border border-white/[0.08] hover:border-white/[0.16] transition-all flex items-center justify-between gap-4"
+                      className="p-4 rounded-[20px] bg-neutral-900/80 border border-white/[0.08] hover:border-white/[0.16] transition-all flex items-center justify-between gap-4"
                     >
-                      <div className="flex items-center gap-3.5">
+                      <div className="flex items-center gap-3.5 min-w-0">
                         <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                             idx === 0
                               ? 'bg-gradient-to-br from-neutral-800 to-neutral-700 text-white'
                               : 'bg-gradient-to-br from-emerald-950 to-neutral-800 text-emerald-400'
@@ -481,13 +492,13 @@ export default function Home() {
                         >
                           <ShieldAlert className="w-5 h-5" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-white truncate">
                               {alert.sourceService}
                             </span>
                             <span
-                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold shrink-0 ${
                                 alert.severity === 'CRITICAL'
                                   ? 'bg-red-500/20 text-red-300'
                                   : 'bg-amber-500/20 text-amber-300'
@@ -496,16 +507,16 @@ export default function Home() {
                               {alert.severity}
                             </span>
                           </div>
-                          <span className="text-xs text-neutral-400 block mt-0.5 line-clamp-1">
+                          <span className="text-xs text-neutral-400 block mt-0.5 truncate">
                             {alert.reason}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => setInspectingAlert(alert)}
-                          className="px-2.5 py-1 text-[11px] font-mono rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-neutral-300 border border-white/[0.08] transition-colors cursor-pointer"
+                          className="px-3 py-1 text-xs font-mono rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-neutral-300 border border-white/[0.08] transition-colors cursor-pointer"
                         >
                           Payload
                         </button>
@@ -516,6 +527,7 @@ export default function Home() {
                               ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                               : 'bg-white/[0.04] text-neutral-400 hover:text-white border-white/[0.08]'
                           }`}
+                          title="Acknowledge Alert"
                         >
                           <Check className="w-3.5 h-3.5" />
                         </button>
@@ -527,7 +539,7 @@ export default function Home() {
             </div>
 
             {/* Bottom Live Log Stream Console */}
-            <div ref={terminalRef} className="pt-2">
+            <div ref={terminalRef} className="pt-4">
               <LiveLogStream
                 logs={logs}
                 isStreaming={isStreaming}
@@ -537,7 +549,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* AWS Payload Modal */}
+        {/* AWS Payload Inspector Modal */}
         <AwsPayloadModal
           alert={inspectingAlert}
           onClose={() => setInspectingAlert(null)}
