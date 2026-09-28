@@ -38,6 +38,12 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.text-gradient-violet {
+  background: linear-gradient(180deg, #C4B5FD 0%, #8B5CF6 50%, #6D28D9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* Custom smooth scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;

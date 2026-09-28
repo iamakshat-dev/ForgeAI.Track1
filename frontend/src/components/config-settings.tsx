@@ -49,7 +49,7 @@ export function ConfigSettings({
             <h2 className="text-xl font-semibold text-white tracking-tight">Detection Engine Configuration</h2>
           </div>
           <p className="text-xs text-neutral-400 mt-1">
-            Dynamic parameter tuning applied immediately to the rolling sliding-window baseline engine
+            Dynamic parameter tuning applied immediately to the anomaly detection engine
           </p>
         </div>
 
@@ -72,36 +72,13 @@ export function ConfigSettings({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Panel 1: Sliding Window & Baseline Parameters */}
+        {/* Panel 1: Baseline Parameters & Anomaly Thresholds */}
         <div className="p-6 rounded-[24px] bg-neutral-950/80 border border-white/[0.08] space-y-6">
           <div className="border-b border-white/[0.06] pb-3">
-            <h3 className="text-sm font-semibold text-white">Sliding Window & Statistical Baseline</h3>
+            <h3 className="text-sm font-semibold text-white">Statistical Baseline & Thresholds</h3>
             <span className="text-xs text-neutral-400">
               Demonstrates learned dynamic baselines vs static hardcoded thresholds
             </span>
-          </div>
-
-          {/* Window Seconds */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs font-mono">
-              <span className="text-neutral-300">Sliding Window Duration</span>
-              <span className="text-white font-bold">{config.windowSeconds} seconds</span>
-            </div>
-            <div className="flex gap-2">
-              {[30, 60, 120, 300].map((sec) => (
-                <button
-                  key={sec}
-                  onClick={() => setConfig({ ...config, windowSeconds: sec })}
-                  className={`flex-1 py-1.5 text-xs font-mono rounded-lg border transition-all cursor-pointer ${
-                    config.windowSeconds === sec
-                      ? 'bg-white text-black font-semibold border-white shadow-sm'
-                      : 'bg-black/50 text-neutral-400 border-white/[0.08] hover:text-white'
-                  }`}
-                >
-                  {sec}s
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Critical Z-Score Threshold */}
