@@ -48,7 +48,7 @@ export default function Home() {
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  // Clean 3-digit stability score (e.g. 832)
+  // Clean 3-digit score matching the reference image (e.g. 832)
   const stabilityIndex = Math.max(720, Math.min(990, Math.round(990 - currentErrorRate * 3500)));
 
   const handleSaveConfig = (newConfig: DetectorConfig) => {
@@ -59,7 +59,7 @@ export default function Home() {
     <SmoothScroll>
       <div className="min-h-screen bg-[#08090C] text-[#EDEDED] flex flex-col antialiased selection:bg-neutral-800 selection:text-white">
         {/* =========================================================================
-            TOP NAVIGATION: SEAMLESSLY INTEGRATED DIRECTLY IN CANVAS (NO CLUNKY BAR)
+            SUB-VIEW HEADER (ONLY WHEN NOT ON DASHBOARD)
             ========================================================================= */}
         {activeTab !== 'DASHBOARD' && (
           <div className="w-full bg-transparent px-6 sm:px-10 lg:px-14 pt-6 pb-2">
@@ -125,18 +125,18 @@ export default function Home() {
         )}
 
         {/* =========================================================================
-            VIEW 1: LIVE DASHBOARD (THE MOCKUP WITH PORCELAIN AMBER DECK & SPLIT DARK)
+            VIEW 1: LIVE DASHBOARD
+            UPPER HALF: LIGHT-TO-BLACK GRADIENT FROM RIGHT WITH GOLDEN AMBER SUN FLARE
             ========================================================================= */}
         {activeTab === 'DASHBOARD' && (
           <>
-            {/* UPPER HALF: LIGHT DECK WITH AMBER GLOW & INTEGRATED BRANDING */}
-            <section className="relative w-full bg-[#F5F4F0] text-neutral-900 pt-7 pb-14 px-6 sm:px-10 lg:px-14 overflow-hidden border-b border-neutral-300">
-              {/* Warm Amber Glowing Ambient Backdrop */}
-              <div className="absolute top-[-40px] right-[18%] w-[620px] h-[500px] bg-gradient-to-br from-[#F59E0B]/35 via-[#F97316]/25 to-transparent blur-[95px] rounded-full pointer-events-none" />
-              <div className="absolute top-[70px] right-[30%] w-[340px] h-[340px] bg-gradient-to-tr from-[#EA580C]/20 via-[#FBBF24]/20 to-transparent blur-[75px] rounded-full pointer-events-none" />
+            <section className="relative w-full bg-gradient-to-r from-[#F4F1EA] via-[#F4F1EA] lg:via-[#F4F1EA] lg:to-[#090A0E] text-neutral-900 pt-7 pb-14 px-6 sm:px-10 lg:px-14 overflow-hidden border-b border-white/[0.08]">
+              {/* The Glowing Golden-Amber Sunbeam Flare coming from the right/center into the dark right side */}
+              <div className="absolute top-[-50px] right-[10%] w-[680px] h-[550px] bg-gradient-to-br from-[#F59E0B]/40 via-[#EA580C]/25 to-transparent blur-[100px] rounded-full pointer-events-none" />
+              <div className="absolute top-[60px] right-[24%] w-[380px] h-[380px] bg-gradient-to-tr from-[#D97706]/35 via-[#FBBF24]/25 to-transparent blur-[80px] rounded-full pointer-events-none" />
 
               <div className="relative z-10 max-w-7xl mx-auto">
-                {/* Brand & Tabs Floating Seamlessly inside the Canvas (no separate navbar bar) */}
+                {/* Brand & In-Canvas Navigation (no separate navbar) */}
                 <div className="flex items-center justify-between gap-4 mb-9">
                   {/* Brand Logo & Name */}
                   <div className="flex items-center gap-2.5">
@@ -149,41 +149,41 @@ export default function Home() {
                     <span className="text-xs text-neutral-500 font-mono">/ Telemetry</span>
                   </div>
 
-                  {/* Navigation Pills */}
+                  {/* Navigation Pills (Karma / Credits / Money style sitting over the ambient backdrop) */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setActiveTab('DASHBOARD')}
-                      className="px-4 py-1.5 text-xs font-semibold rounded-full bg-black text-white shadow-sm transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
+                      className="px-4 py-1.5 text-xs font-semibold rounded-full bg-black text-white shadow-md transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
                     >
                       Stream Health
                     </button>
                     <button
                       onClick={() => setActiveTab('HISTORY')}
-                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/80 border border-neutral-300 text-neutral-700 hover:bg-white hover:text-black transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
+                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/80 border border-neutral-300 text-neutral-800 hover:bg-white transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
                     >
                       Alerts ({activeAnomaliesCount})
                     </button>
                     <button
                       onClick={() => setActiveTab('SINKS')}
-                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/80 border border-neutral-300 text-neutral-700 hover:bg-white hover:text-black transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
+                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/80 border border-neutral-300 text-neutral-800 hover:bg-white transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
                     >
                       AWS Sinks
                     </button>
                     <button
                       onClick={() => setActiveTab('CONFIG')}
-                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/80 border border-neutral-300 text-neutral-700 hover:bg-white hover:text-black transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
+                      className="px-4 py-1.5 text-xs font-medium rounded-full bg-white/80 border border-neutral-300 text-neutral-800 hover:bg-white transition-all cursor-pointer font-[family-name:var(--font-montserrat)]"
                     >
                       Config
                     </button>
                   </div>
                 </div>
 
-                {/* Main Upper Grid */}
+                {/* Upper Deck Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-                  {/* Left Column: Headline with subtle text gradient, Scope Pills, Big Metric + Gauge */}
+                  {/* Left Column (Light side): Headline, Pills, Big Metric + Gauge, Sub-Cards */}
                   <div className="lg:col-span-6 flex flex-col justify-between">
                     <div>
-                      {/* Headline with sleek dark text gradient */}
+                      {/* Headline with dark text gradient */}
                       <h1 className="text-4xl sm:text-[42px] font-bold tracking-tight text-gradient-dark font-[family-name:var(--font-montserrat)] mb-3 leading-tight">
                         Stream Stability
                       </h1>
@@ -235,17 +235,17 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {/* Radial Arc Gauge - sits immediately next to the number */}
+                        {/* Radial Arc Gauge: needle smoothly aligned */}
                         <div className="shrink-0 pl-2">
-                          <CleanGauge errorRate={currentErrorRate} />
+                          <CleanGauge score={stabilityIndex} />
                         </div>
                       </div>
                     </div>
 
-                    {/* Two Floating White Sub-Cards */}
+                    {/* Two Floating White Sub-Cards (Net Worth & Total Debt counterpart) */}
                     <div className="grid grid-cols-2 gap-4 mt-10">
                       {/* Card 1: Rolling Error Rate */}
-                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
+                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
                         <div className="flex items-center justify-between">
                           <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
                             <Activity className="w-4 h-4" />
@@ -269,7 +269,7 @@ export default function Home() {
                       </div>
 
                       {/* Card 2: Z-Score Deviation */}
-                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
+                      <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-neutral-200/90 flex flex-col justify-between h-[125px]">
                         <div className="flex items-center justify-between">
                           <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700">
                             <AlertTriangle className="w-4 h-4 text-amber-600" />
@@ -298,10 +298,10 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Right Column: 2x2 Perfectly Symmetrical Floating Cards */}
+                  {/* Right Column: Sits over the glowing amber/dark transition */}
                   <div className="lg:col-span-6 grid grid-cols-2 gap-4">
-                    {/* Card 1 (Top-Left): Frosted Dark Card */}
-                    <div className="rounded-[22px] p-5 shadow-xl bg-gradient-to-br from-[#334155]/95 via-[#1E293B]/95 to-[#0F172A]/95 text-white backdrop-blur-md border border-white/20 flex flex-col justify-between h-[155px]">
+                    {/* Card 1 (Top-Left): Frosted Dark Card (Credit Card Use counterpart) */}
+                    <div className="rounded-[22px] p-5 shadow-2xl bg-gradient-to-br from-[#2D3748]/90 via-[#1E293B]/95 to-[#0F172A]/95 text-white backdrop-blur-xl border border-white/20 flex flex-col justify-between h-[155px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-neutral-300 font-[family-name:var(--font-montserrat)]">
                           Sliding Error (60s)
@@ -327,9 +327,9 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Card 2 (Top-Right): Pure Crisp White Card */}
+                    {/* Card 2 (Top-Right): Crisp White Card (Payment History counterpart) */}
                     <div
-                      className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[155px] cursor-pointer hover:border-neutral-300 transition-colors"
+                      className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[155px] cursor-pointer hover:border-neutral-300 transition-colors"
                       onClick={() => setActiveTab('SINKS')}
                     >
                       <div className="flex items-center justify-between">
@@ -349,7 +349,7 @@ export default function Home() {
                     </div>
 
                     {/* Card 3 (Bottom-Left): Ingest Rate with Multi-Peak Sparkline */}
-                    <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[155px]">
+                    <div className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[155px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-neutral-600 font-[family-name:var(--font-montserrat)]">
                           Ingest Rate
@@ -386,7 +386,7 @@ export default function Home() {
                     </div>
 
                     {/* Card 4 (Bottom-Right): Buffer Health with Wave Sparkline */}
-                    <div className="bg-white rounded-[22px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-200/90 flex flex-col justify-between h-[155px]">
+                    <div className="bg-white rounded-[22px] p-5 shadow-2xl border border-neutral-100 flex flex-col justify-between h-[155px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-neutral-600 font-[family-name:var(--font-montserrat)]">
                           Buffer Health
@@ -427,7 +427,6 @@ export default function Home() {
                   {/* Left: Sliding Window Error History */}
                   <div className="lg:col-span-7 flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-6">
-                      {/* Luminous Silver Text Gradient Heading (like Quantix reference) */}
                       <h2 className="text-2xl font-bold tracking-tight text-gradient-luminous font-[family-name:var(--font-montserrat)]">
                         Sliding Window Error History
                       </h2>
